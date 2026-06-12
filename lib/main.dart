@@ -1,9 +1,12 @@
-import 'package:checkout_payment_by_paymab/features/chechout/presentation/views/my_cart_view.dart';
+import 'package:checkout_payment_by_paymab/MyBlocObserver.dart';
+import 'package:checkout_payment_by_paymab/core/network/remote/dio_helper.dart';
+import 'package:checkout_payment_by_paymab/features/chechout/presentation/views/register_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
+  Bloc.observer = MyBlocObserver();
+  DioHelper.init();
   runApp(const CheckoutApp());
 }
 
@@ -12,6 +15,10 @@ class CheckoutApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: MyCartView());
+    return MaterialApp(
+      initialRoute: RegisterPage.routeName,
+
+      routes: {RegisterPage.routeName: (context) => const RegisterPage()},
+    );
   }
 }
