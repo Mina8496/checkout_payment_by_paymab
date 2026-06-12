@@ -1,5 +1,6 @@
 import 'package:checkout_payment_by_paymab/core/network/remote/dio_helper.dart';
 import 'package:checkout_payment_by_paymab/core/utils/constant/api_key.dart';
+import 'package:checkout_payment_by_paymab/features/chechout/model/data/billing_data_model.dart';
 import 'package:checkout_payment_by_paymab/features/chechout/presentation/manger/cubit/payment_state.dart';
 import 'package:checkout_payment_by_paymab/features/chechout/presentation/views/widgets/PaymentWebView.dart';
 import 'package:dio/dio.dart';
@@ -37,6 +38,7 @@ class PaymentCubit extends Cubit<PaymentState> {
     String token,
     int orderId,
     int amountCents,
+    BillingDataModel billing,
   ) async {
     final response = await DioHelper.postData(
       endPoint: "acceptance/payment_keys",
@@ -48,13 +50,13 @@ class PaymentCubit extends Cubit<PaymentState> {
         'currency': 'EGP',
         'integration_id': integrationCardID,
         'billing_data': {
-          'first_name': 'Test',
-          'last_name': 'User',
-          'email': 'test@test.com',
-          'phone_number': '01000000000',
+          'first_name': billing.firstName,
+          'last_name': billing.lastName,
+          'email': billing.email,
+          'phone_number': billing.phone,
           'country': 'EG',
-          'city': 'Cairo',
-          'street': 'NA',
+          'city': billing.city,
+          'street': billing.street,
           'building': 'NA',
           'floor': 'NA',
           'apartment': 'NA',
@@ -65,38 +67,37 @@ class PaymentCubit extends Cubit<PaymentState> {
     return response.data['token'];
   }
 
-  Future<void> startPayment(BuildContext context) async {
+  Future<void> startPayment(
+    BuildContext context,
+    BillingDataModel billing,
+  ) async {
     try {
       emit(PaymentLoadingAuthToken());
 
       final authToken = await getAuthToken();
       final orderId = await createOrder(authToken, 10000);
-      final paymentKey = await getPaymentKey(authToken, orderId, 10000);
+
+      final paymentKey = await getPaymentKey(
+        authToken,
+        orderId,
+        10000,
+        billing,
+      );
 
       emit(PaymentSuccessAuthToken());
 
       // افتح الـ WebView
-      final result = await Navigator.push(
+      await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) => PaymentWebView(paymentKey: paymentKey),
         ),
       );
-
-      if (result == 'success') {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('✅ تم الدفع بنجاح!')));
-      } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('❌ فشل الدفع')));
-      }
     } on DioException catch (e) {
       print(e.response?.data);
       print(e.response?.statusCode);
 
-      emit(PaymentErrorAuthToken(e.response?.data.toString() ?? 'حدث خطأ'));
+      emit(PaymentErrorAuthToken(e.response?.data.toString() ?? e.toString()));
     }
   }
 }

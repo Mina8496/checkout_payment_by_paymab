@@ -18,7 +18,7 @@ class CheckoutApp extends StatelessWidget {
     return MaterialApp(
       initialRoute: RegisterPage.routeName,
 
-      routes: {RegisterPage.routeName: (context) => const RegisterPage()},
+      routes: {RegisterPage.routeName: (context) =>  RegisterPage()},
     );
   }
 }
