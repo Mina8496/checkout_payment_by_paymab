@@ -45,6 +45,10 @@ lib/
 
 ## 📸 Screenshots
 
+### Payment
+
+![Payment](Screenshot/Payment.png)
+
 ### Payment Information Screen
 
 ![Payment Information](Screenshot/payment_information.jpg)
